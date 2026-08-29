@@ -747,3 +747,15 @@ if aba_dados.open:
             file_name=f"copa_{escolha.lower()}_{ini}_{fim}.csv",
             mime="text/csv",
         )
+
+# --------------------------------------------------------------------------- #
+# Rodapé — fora das abas, aparece em todas.
+# Emoji aqui é deliberado: é o único ponto do app onde ele cabe.
+# --------------------------------------------------------------------------- #
+st.space("large")
+st.caption(
+    "✨ Feito com ❤️ por **Felipe Vital** e **Claudinho** — "
+    "[vitaless7](https://github.com/vitaless7) · "
+    "[código no GitHub](https://github.com/vitaless7/worldcup-dashboard)",
+    text_alignment="center",
+)
