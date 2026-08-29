@@ -1,0 +1,69 @@
+# Tema dark do dashboard da Copa do Mundo.
+# Superficie #1a1a19 — e contra ela que a paleta dos graficos foi validada
+# (bandas OKLCH, piso de croma, separacao CVD protan/deutan e contraste WCAG).
+# Alterar backgroundColor exige revalidar a paleta.
+
+[theme]
+base = "dark"
+primaryColor = "#3987e5"                 # slot categorico 1
+backgroundColor = "#1a1a19"              # superficie dos graficos
+secondaryBackgroundColor = "#242422"     # widgets, sidebar, blocos de codigo
+codeBackgroundColor = "#242422"
+textColor = "#ffffff"                    # tinta primaria
+linkColor = "#3987e5"
+borderColor = "#2c2c2a"                  # hairline
+codeTextColor = "#c3c2b7"                # tinta secundaria
+
+font = "'Inter':https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+headingFont = "'Inter':https://fonts.googleapis.com/css2?family=Inter:wght@600;700&display=swap"
+codeFont = "'JetBrains Mono':https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+baseFontSize = 15
+baseFontWeight = 400
+codeFontSize = "13px"
+headingFontSizes = ["30px", "23px", "19px", "16px", "14px", "13px"]
+headingFontWeights = [700, 600, 600, 600, 500, 500]
+linkUnderline = false
+baseRadius = "8px"
+buttonRadius = "8px"
+showWidgetBorder = true
+showSidebarBorder = true
+
+# Status — tokens fixos, nunca tematizados. Nunca reaproveitados como "serie 4".
+greenColor = "#0ca30c"                   # good
+yellowColor = "#fab219"                  # warning
+orangeColor = "#ec835a"                  # serious
+redColor = "#d03b3b"                     # critical
+blueColor = "#3987e5"
+violetColor = "#9085e9"
+grayColor = "#898781"                    # tinta muted (eixos, rotulos)
+
+# Categorica: ordem fixa, nunca ciclada. Passa banda, croma, CVD adjacente
+# (pior dE 8.4 protan) e piso de visao normal (19.3) nesta superficie.
+chartCategoricalColors = [
+    "#3987e5",  # 1 azul
+    "#d95926",  # 2 laranja
+    "#199e70",  # 3 aqua
+    "#c98500",  # 4 amarelo
+    "#d55181",  # 5 magenta
+    "#008300",  # 6 verde
+    "#9085e9",  # 7 violeta
+    "#e66767",  # 8 vermelho
+]
+
+# Sequencial: um tom so, claro -> escuro. Nunca arco-iris.
+chartSequentialColors = [
+    "#cde2fb", "#b7d3f6", "#9ec5f4", "#86b6ef", "#6da7ec",
+    "#5598e7", "#3987e5", "#2a78d6", "#256abf", "#184f95",
+]
+
+dataframeBorderColor = "#2c2c2a"
+dataframeHeaderBackgroundColor = "#242422"
+
+[theme.sidebar]
+backgroundColor = "#141413"
+secondaryBackgroundColor = "#242422"
+codeBackgroundColor = "#242422"
+borderColor = "#2c2c2a"
+
+[browser]
+gatherUsageStats = false
