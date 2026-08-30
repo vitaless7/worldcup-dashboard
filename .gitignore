@@ -16,3 +16,14 @@ Thumbs.db
 
 # Notebooks
 .ipynb_checkpoints/
+
+# Claude Code / Spec Kit - arquivos locais (podem conter credenciais ou tokens)
+.claude/settings.local.json
+.claude/.credentials.json
+.claude/shell-snapshots/
+.claude/todos/
+.claude/projects/
+.claude/statsig/
+.claude/history.jsonl
+.claude/*.local.*
+# Nota: .claude/skills/ (skills do Spec Kit) fica versionado de proposito.
