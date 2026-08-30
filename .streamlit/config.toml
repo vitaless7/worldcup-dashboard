@@ -1,18 +1,25 @@
-# Tema dark do dashboard da Copa do Mundo.
-# Superficie #1a1a19 — e contra ela que a paleta dos graficos foi validada
-# (bandas OKLCH, piso de croma, separacao CVD protan/deutan e contraste WCAG).
-# Alterar backgroundColor exige revalidar a paleta.
+# Tema do dashboard da Copa do Mundo.
+# Espelhado na referencia de design (dashboard "Zoya"): quase-preto neutro com
+# UM accent laranja, usado com parcimonia. Superficies medidas na propria
+# imagem: pagina #0e0e0e, cartao #171717, accent #f6700a-#ff7810.
+#
+# As marcas dos graficos ficam SOBRE O CARTAO (#171717) — e contra ele que a
+# paleta foi validada, nao contra a pagina. Alterar essas superficies exige
+# revalidar com dataviz/scripts/validate_palette.py.
 
 [theme]
 base = "dark"
-primaryColor = "#3987e5"                 # slot categorico 1
-backgroundColor = "#1a1a19"              # superficie dos graficos
-secondaryBackgroundColor = "#242422"     # widgets, sidebar, blocos de codigo
-codeBackgroundColor = "#242422"
-textColor = "#ffffff"                    # tinta primaria
-linkColor = "#3987e5"
-borderColor = "#2c2c2a"                  # hairline
-codeTextColor = "#c3c2b7"                # tinta secundaria
+# Accent. O laranja da referencia (#ff7810) tem L 0.72 — fora da banda de
+# marca (0.48-0.67). Este e o passo mais proximo que passa: L 0.651, croma
+# 0.168, 5.24:1 sobre o cartao.
+primaryColor = "#dd6a10"
+backgroundColor = "#0e0e0e"              # pagina
+secondaryBackgroundColor = "#171717"     # cartoes, widgets, superficie dos graficos
+codeBackgroundColor = "#171717"
+textColor = "#e1e1e1"                    # tinta primaria (14.8:1 na pagina)
+linkColor = "#f2760f"                    # 6.8:1 na pagina
+borderColor = "#242424"                  # hairline
+codeTextColor = "#aaaaaa"                # tinta secundaria (8.3:1)
 
 font = "'Inter':https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
 headingFont = "'Inter':https://fonts.googleapis.com/css2?family=Inter:wght@600;700&display=swap"
@@ -23,8 +30,9 @@ codeFontSize = "13px"
 headingFontSizes = ["30px", "23px", "19px", "16px", "14px", "13px"]
 headingFontWeights = [700, 600, 600, 600, 500, 500]
 linkUnderline = false
-baseRadius = "8px"
-buttonRadius = "8px"
+# Raio grande e botao em pilula: a linguagem de forma da referencia.
+baseRadius = "14px"
+buttonRadius = "full"
 showWidgetBorder = true
 showSidebarBorder = true
 
@@ -35,14 +43,19 @@ orangeColor = "#ec835a"                  # serious
 redColor = "#d03b3b"                     # critical
 blueColor = "#3987e5"
 violetColor = "#9085e9"
-grayColor = "#898781"                    # tinta muted (eixos, rotulos)
+grayColor = "#8a8a8a"                    # tinta muted (eixos, rotulos) — 5.6:1
 
-# Categorica: ordem fixa, nunca ciclada. Passa banda, croma, CVD adjacente
-# (pior dE 8.4 protan) e piso de visao normal (19.3) nesta superficie.
+# Categorica: ordem fixa, nunca ciclada — a ordem E o mecanismo de seguranca
+# CVD. Slot 1 no laranja do accent, que e como a referencia trabalha: um tom
+# carrega quase todo grafico. Slot 2 no aqua, o mais distante dele.
+#
+# Validada com dataviz/scripts/validate_palette.py --mode dark --surface #171717:
+#   adjacente  CVD 10.4 · piso de visao normal 19.3
+#   3 primeiros --pairs all (dispersao)  CVD 11.9 · piso normal 25.0
 chartCategoricalColors = [
-    "#3987e5",  # 1 azul
-    "#d95926",  # 2 laranja
-    "#199e70",  # 3 aqua
+    "#dd6a10",  # 1 laranja (accent)
+    "#199e70",  # 2 aqua
+    "#3987e5",  # 3 azul
     "#c98500",  # 4 amarelo
     "#d55181",  # 5 magenta
     "#008300",  # 6 verde
@@ -50,20 +63,21 @@ chartCategoricalColors = [
     "#e66767",  # 8 vermelho
 ]
 
-# Sequencial: um tom so, claro -> escuro. Nunca arco-iris.
+# Sequencial: um tom so, claro -> escuro. Nunca arco-iris. No tom do slot 1,
+# gerada em OKLCH com L monotono. Extremo escuro a 2.44:1 do cartao.
 chartSequentialColors = [
-    "#cde2fb", "#b7d3f6", "#9ec5f4", "#86b6ef", "#6da7ec",
-    "#5598e7", "#3987e5", "#2a78d6", "#256abf", "#184f95",
+    "#ffdaba", "#ffc39a", "#ffad7a", "#ff985b", "#f2843d",
+    "#e4711f", "#d26000", "#be5200", "#a84700", "#903d00",
 ]
 
-dataframeBorderColor = "#2c2c2a"
-dataframeHeaderBackgroundColor = "#242422"
+dataframeBorderColor = "#242424"
+dataframeHeaderBackgroundColor = "#171717"
 
 [theme.sidebar]
-backgroundColor = "#141413"
-secondaryBackgroundColor = "#242422"
-codeBackgroundColor = "#242422"
-borderColor = "#2c2c2a"
+backgroundColor = "#0b0b0b"
+secondaryBackgroundColor = "#171717"
+codeBackgroundColor = "#171717"
+borderColor = "#242424"
 
 [browser]
 gatherUsageStats = false

@@ -26,27 +26,42 @@ ALEMANHA = {"Germany FR": "Germany", "West Germany": "Germany", "Germany DR": "G
 # Paleta — cada cor tem um trabalho. Validada contra a superfície #1a1a19:
 # banda OKLCH, piso de croma, separação CVD (protan/deutan) e contraste WCAG.
 # --------------------------------------------------------------------------- #
-SUPERFICIE = "#1a1a19"
+# É o CARTÃO, não a página: é sobre ele que as marcas ficam, então é contra
+# ele que a paleta foi validada e é dele a cor dos vãos de 2px entre marcas.
+SUPERFICIE = "#171717"
 
-# Categórica (identidade). Ordem fixa, nunca ciclada.
-SERIE = ["#3987e5", "#d95926", "#199e70", "#c98500", "#d55181", "#008300", "#9085e9", "#e66767"]
+# Categórica (identidade). Ordem fixa, nunca ciclada — a ordem É o mecanismo
+# de segurança CVD. Slot 1 no laranja do accent: é assim que a referência
+# trabalha, um tom só carregando quase todo gráfico. Slot 2 no aqua, o mais
+# distante dele. O laranja da imagem (#ff7810) ficou de fora por estar acima da
+# banda de marca (L 0.72 > 0.67); #dd6a10 é o passo mais próximo que passa.
+# Validada em dataviz/scripts/validate_palette.py --mode dark --surface #171717:
+# adjacente CVD 10.4 · piso de visão normal 19.3 · 3 primeiros --pairs all 11.9/20.9.
+SERIE = ["#dd6a10", "#199e70", "#3987e5", "#c98500", "#d55181", "#008300", "#9085e9", "#e66767"]
 
 # Divergente (polaridade): dois polos opostos + cinza neutro no meio.
-# Azul<->vermelho em vez de verde<->vermelho: o par verde/vermelho colapsa
-# sob deuteranopia (ΔE 4.1, piso 8) — é o erro de daltonismo mais comum em dashboards.
-DIVERGENTE = [[0.0, "#e66767"], [0.5, "#8a8a86"], [1.0, "#3987e5"]]
-NEUTRO = "#8a8a86"
+# Laranja<->azul: CVD 27.3, e mantém a tela em dois cromáticos só (o accent e
+# o azul), que é a economia de cor da referência — o âmbar que estava aqui
+# virava um terceiro tom quente difícil de separar do accent.
+# Verde<->vermelho está fora: colapsa sob deuteranopia.
+POLO_POS, POLO_NEG = "#dd6a10", "#3987e5"
+DIVERGENTE = [[0.0, POLO_NEG], [0.5, "#7a7a7a"], [1.0, POLO_POS]]
+NEUTRO = "#7a7a7a"
 
-# Ordinal (categorias ordenadas): rampa de um tom só. Pódio 1º > 2º > 3º,
-# na família âmbar para preservar a leitura de medalha.
-PODIO = {"1º — Campeão": "#f0c05a", "2º — Vice": "#c9922b", "3º — Terceiro": "#8f6416"}
+# Ordinal (categorias ordenadas): rampa de um tom só. Pódio 1º > 2º > 3º.
+# Neutra, não âmbar: ao lado do laranja do accent a rampa dourada virava a
+# mesma cor com saturações diferentes. Aqui o laranja segue sendo o único
+# cromático da tela, que é como a referência trabalha.
+# Validada --ordinal --surface #171717: L monótono, ΔL >= 0.06, ponta 3.52:1.
+PODIO = {"1º — Campeão": "#dcdcdc", "2º — Vice": "#a5a5a5", "3º — Terceiro": "#6e6e6e"}
 
 # Status (estado). Tokens reservados — nunca viram "série 4".
 AMARELO, VERMELHO = "#fab219", "#d03b3b"
 
-# Cromo do gráfico
-TINTA, TINTA2, MUTED = "#ffffff", "#c3c2b7", "#898781"
-GRADE = "#2c2c2a"
+# Cromo do gráfico — neutro, medido na referência (rótulos #aaaaaa, eixos mais
+# recuados ainda). Nada de branco puro: a referência não usa em lugar nenhum.
+TINTA, TINTA2, MUTED = "#e1e1e1", "#aaaaaa", "#8a8a8a"
+GRADE = "#232323"
 
 st.set_page_config(
     page_title="Copa do Mundo — Dashboard",
@@ -55,33 +70,207 @@ st.set_page_config(
 )
 
 
+# --------------------------------------------------------------------------- #
+# Cromo de cartão — importado da referência de design (SaaS moderno):
+# raio grande, sombra suave, respiro interno e um cartão "herói" em gradiente.
+# O tema (cores, fonte, raio base) vive em .streamlit/config.toml; aqui fica só
+# o que o config não alcança: sombra, tamanho do número do metric e o gradiente.
+#
+# Contraste do herói: branco sobre #cf4055 dá 4,7:1 e sobre #b8407e dá 5,4:1 —
+# ambos passam WCAG AA para texto pequeno. Clarear o gradiente quebra isso.
+# --------------------------------------------------------------------------- #
+# O herói não é mais um bloco chapado de cor: na referência os cartões são
+# escuros e o accent entra em traço fino. Gradiente quente e discreto, com o
+# laranja aparecendo na onda e nos números — não no fundo.
+HERO_A, HERO_B = "#241a10", "#161310"
+ACCENT = "#f2760f"      # laranja vivo: só traço e texto, nunca área com texto em cima
+
+st.html(f"""
+<style>
+/* Cartões: elevação discreta. Na referência a separação vem do tom do cartão
+   contra a página (#171717 sobre #0e0e0e), não de sombra pesada. */
+[class*="st-key-cartao"], [data-testid="stMetric"] {{
+    box-shadow: 0 1px 2px rgba(0,0,0,.40);
+    transition: box-shadow .18s ease, border-color .18s ease;
+}}
+[class*="st-key-cartao"]:hover, [data-testid="stMetric"]:hover {{
+    border-color: #323232;
+    box-shadow: 0 2px 6px rgba(0,0,0,.5), 0 14px 34px -20px rgba(0,0,0,.7);
+}}
+[class*="st-key-cartao"] {{ padding: 4px 6px; }}
+
+/* Números grandes: é o KPI que carrega o cartão, não o rótulo. */
+[data-testid="stMetric"] {{ padding: 18px 20px; }}
+[data-testid="stMetricValue"] {{ font-size: 30px; font-weight: 600; letter-spacing: -.02em; }}
+[data-testid="stMetricLabel"] p {{ font-size: 13px; color: {MUTED}; }}
+
+/* Herói — cartão escuro com o accent em traço, como o "Climate Control" da
+   referência. Fundo chapado de laranja com texto branco daria 2,9:1; aqui o
+   laranja fica na onda e nos números, sobre fundo escuro, a 6,8:1. */
+.st-key-heroi {{
+    background: linear-gradient(140deg, {HERO_A} 0%, {HERO_B} 62%);
+    border: 1px solid #2a2118;
+    padding: 22px 24px 18px;
+}}
+/* O metric do herói é o único sem borda no app: nada de sombra/padding de cartão. */
+.st-key-heroi [data-testid="stMetric"] {{ box-shadow: none; padding: 0; }}
+.st-key-heroi [data-testid="stMetricValue"] {{
+    font-size: 46px; color: {TINTA}; font-weight: 600;
+}}
+.st-key-heroi [data-testid="stMetricLabel"] p {{ color: {MUTED}; }}
+.st-key-heroi strong {{ color: {ACCENT}; font-size: 19px; }}
+.st-key-heroi p {{ color: {TINTA2}; }}
+
+/* Tipografia — três níveis e só. Rótulo de seção (h5) vira micro-caixa-alta
+   recuada; título de cartão é o peso do meio; legenda é tinta muted. */
+h5 {{
+    font-size: 11px !important; font-weight: 600 !important;
+    letter-spacing: .09em; text-transform: uppercase;
+    color: {MUTED} !important; margin-bottom: 2px;
+}}
+[class*="st-key-cabecalho-"] {{ margin-bottom: 2px; }}
+[class*="st-key-cabecalho-"] p {{
+    font-size: 15px; font-weight: 600; letter-spacing: -.01em;
+}}
+[class*="st-key-cabecalho-"] [data-testid="stCaption"] p,
+[class*="st-key-cabecalho-"] small {{ color: {MUTED}; }}
+
+/* Marca: selo em gradiente + assinatura. Vai num bloco de HTML só — um lockup
+   de marca não tem equivalente nativo, e aninhar containers para montá-lo
+   deixa o selo à mercê do flex do Streamlit (ele colapsava para 7px). */
+.marca {{ display: flex; align-items: center; gap: 11px; margin: 2px 0 18px; }}
+.marca-selo {{
+    background: #1c1610;
+    border: 1px solid #2e2419;
+    border-radius: 13px;
+    width: 40px; height: 40px; flex: 0 0 40px;
+    display: flex; align-items: center; justify-content: center;
+}}
+.marca-icone {{
+    font-family: "Material Symbols Rounded"; font-size: 23px; color: {ACCENT};
+    line-height: 1;
+}}
+.marca-nome {{ font-weight: 700; font-size: 15px; color: {TINTA}; line-height: 1.25; }}
+.marca-sub {{ font-size: 12px; color: {MUTED}; line-height: 1.25; }}
+
+/* Abas em pílula — a barra vira um grupo segmentado, não uma régua sublinhada. */
+[data-testid="stTabs"] [role="tablist"] {{
+    gap: 4px; padding: 5px;
+    background: #131313;
+    border: 1px solid {GRADE};
+    border-radius: 999px;
+    width: fit-content;
+    border-bottom: 1px solid {GRADE};
+}}
+[data-testid="stTab"] {{ border-radius: 999px; padding: 6px 15px; }}
+[data-testid="stTab"]:hover {{ background: #1c1c1c; }}
+/* Aba ativa: preenchimento discreto e o accent no texto — é assim que a
+   referência marca o item de navegação selecionado. Preencher a pílula de
+   laranja obrigaria texto branco em cima dele, que não passa contraste. */
+[data-testid="stTab"][aria-selected="true"] {{ background: #232323; }}
+[data-testid="stTab"][aria-selected="true"] p,
+[data-testid="stTab"][aria-selected="true"] span {{ color: {ACCENT} !important; }}
+/* Sublinhado da aba ativa: a pílula já marca a seleção. */
+.react-aria-SelectionIndicator {{ display: none; }}
+</style>
+""")
+
+_cartoes = 0
+
+
+def cartao(pai=st, titulo=None, legenda=None, **kw):
+    """Container com borda, `key` e cabeçalho próprio.
+
+    A key dá a classe .st-key-cartao-N, que é o gancho estável do CSS de sombra.
+    O título fica no cabeçalho do cartão, não dentro do gráfico: assim todo
+    cartão do app — gráfico, tabela ou KPI — abre do mesmo jeito.
+    """
+    global _cartoes
+    _cartoes += 1
+    box = pai.container(border=True, key=f"cartao-{_cartoes}", **kw)
+    if titulo:
+        with box.container(key=f"cabecalho-{_cartoes}", gap=None):
+            st.markdown(f"**{titulo}**")
+            if legenda:
+                st.caption(legenda)
+    return box
+
+
 def br(n, casas=0):
     """Formata número no padrão pt-BR (1.234,56)."""
     return f"{n:,.{casas}f}".replace(",", "@").replace(".", ",").replace("@", ".")
 
 
-def estilo(fig, altura=400, legenda=True):
-    """Cromo recessivo: grade hairline, sem linha de eixo pesada, legenda no topo."""
+def estilo(fig, altura=400, legenda=True, grade="auto"):
+    """Cromo dos gráficos — um lugar só, para todos terem a mesma cara.
+
+    Da referência de design vem: barra de canto arredondado, linha em spline,
+    grade só no eixo que carrega a medida e tipografia recessiva. O eixo de
+    categoria não ganha grade: ele não tem escala para ler contra.
+
+    grade: "auto" põe grade só no eixo da medida (deduzido da orientação das
+    marcas); "ambos" para dispersões, onde os dois eixos são quantitativos.
+    """
+    horizontal = any(getattr(t, "orientation", None) == "h" for t in fig.data)
+    eixo_medida = "x" if horizontal else "y"
+
+    for t in fig.data:
+        if t.type == "scatter" and "lines" in (t.mode or "lines"):
+            # Spline com pouca tensão: a curva da referência sem inventar
+            # ondulação entre pontos que estão em linha reta.
+            t.line.shape = "spline"
+            t.line.smoothing = 0.6
+
     fig.update_layout(
         height=altura,
-        font=dict(color=TINTA2, size=13),
-        title_font=dict(color=TINTA, size=15),
+        font=dict(color=TINTA2, size=12),
+        # Nada de title/title_font aqui: o título é o cabeçalho do cartão. Qualquer
+        # objeto `title` no layout — mesmo vazio, mesmo `title=None`, que serializa
+        # como {} — faz o Plotly 7 desenhar a string "undefined" dentro do gráfico.
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        margin=dict(l=8, r=8, t=52, b=8),
+        # Sem título dentro do plot, a margem de topo só precisa caber a legenda.
+        margin=dict(l=8, r=8, t=30 if legenda else 4, b=8),
         showlegend=legenda,
-        legend=dict(orientation="h", y=1.06, x=0, title_text="",
-                    bgcolor="rgba(0,0,0,0)", font=dict(color=TINTA2)),
-        hoverlabel=dict(bgcolor="#242422", bordercolor=GRADE,
+        legend=dict(orientation="h", y=1.14, x=0, title_text="",
+                    bgcolor="rgba(0,0,0,0)", itemsizing="constant",
+                    font=dict(color=MUTED, size=12)),
+        hoverlabel=dict(bgcolor="#1f1f1f", bordercolor=GRADE,
                         font=dict(color=TINTA, size=12)),
-        bargap=0.45,        # marcas finas: barra grossa e saturada lê como bloco
+        bargap=0.45,          # marcas finas: barra grossa e saturada lê como bloco
         bargroupgap=0.12,
+        barcornerradius=6,    # no layout, não na marca: em barra empilhada
+                              # arredonda as pontas da pilha, não cada segmento
     )
-    eixo = dict(showgrid=True, gridcolor=GRADE, gridwidth=1, zeroline=False,
-                showline=False, ticks="", tickfont=dict(color=MUTED, size=12),
+
+    eixo = dict(zeroline=False, showline=False, ticks="",
+                gridcolor=GRADE, gridwidth=1,
+                tickfont=dict(color=MUTED, size=12),
                 title_font=dict(color=MUTED, size=12))
-    fig.update_xaxes(**eixo)
-    fig.update_yaxes(**eixo)
+    fig.update_xaxes(**eixo, showgrid=grade == "ambos" or eixo_medida == "x")
+    fig.update_yaxes(**eixo, showgrid=grade == "ambos" or eixo_medida == "y")
+    return fig
+
+
+# Barra de ferramentas do Plotly desligada: ela aparecia flutuando por cima do
+# cartão no hover, com um cromo (ícones, borda, fundo) que não é o do app. O
+# que ela dava — baixar os dados — a aba Dados dá melhor.
+PLOTLY = {"displayModeBar": False}
+
+
+def area_gradiente(fig, cor):
+    """Preenchimento que some para baixo — a onda da referência.
+
+    Serve só para série única: com duas séries sobrepostas o degradê vira
+    uma terceira cor que não representa nada.
+    """
+    r, g, b = (int(cor[i:i + 2], 16) for i in (1, 3, 5))
+    fig.update_traces(
+        fill="tozeroy",
+        fillgradient=dict(type="vertical",
+                          colorscale=[[0, f"rgba({r},{g},{b},0)"],
+                                      [1, f"rgba({r},{g},{b},.22)"]]),
+    )
     return fig
 
 
@@ -207,31 +396,45 @@ def limpar():
 
 
 sb = st.sidebar
-sb.markdown("### :material/tune: Filtros")
 
-sb.pills("Atalhos", list(ATALHOS), key="atalho", on_change=aplicar_atalho,
-         label_visibility="collapsed")
-# value= define que é um slider de intervalo; com a key presente no session_state,
-# é ela que manda (é assim que os atalhos conseguem mover o slider).
-ini, fim = sb.select_slider("Período", options=ANOS, key="periodo",
-                            value=st.session_state.periodo)
-
-unif = sb.toggle(
-    "Unificar Alemanha", key="unif", value=True,
-    help="Os CSVs trazem `Germany FR` e `Germany` separados. Ligado, os dois "
-         "viram uma seleção só — sem isso a Alemanha some do topo dos rankings.",
+# Marca. O gradiente é o mesmo do herói e da aba ativa: é o que amarra barra
+# lateral, cabeçalho e abas como uma coisa só.
+sb.html(
+    '<div class="marca">'
+    '<div class="marca-selo"><span class="marca-icone">sports_soccer</span></div>'
+    '<div><div class="marca-nome">Copa do Mundo</div>'
+    '<div class="marca-sub">FIFA · 1930–2014</div></div>'
+    "</div>"
 )
 
-with sb.expander("Recortar partidas", icon=":material/filter_list:"):
-    st.caption("Vale para as abas Seleções, Partidas e Jogadores. "
-               "O Panorama sempre mostra a edição inteira.")
-    fase_sel = st.segmented_control("Fase", ["Tudo", "Fase de grupos", "Mata-mata"],
-                                    key="mataquem", default="Tudo") or "Tudo"
-    times_sel = st.multiselect(
-        "Seleções", sorted(unificar(matches["Home Team Name"], True).unique()),
-        key="times", placeholder="Todas as seleções",
-        help="Mantém apenas partidas em que ao menos uma destas seleções jogou.",
+# Filtros num cartão — mesma casca dos cartões do conteúdo, para a barra
+# lateral não parecer uma região de outro app.
+with sb.container(border=True, key="cartao-filtros"):
+    st.markdown("##### Filtros")
+
+    st.pills("Atalhos", list(ATALHOS), key="atalho", on_change=aplicar_atalho,
+             label_visibility="collapsed")
+    # value= define que é um slider de intervalo; com a key presente no session_state,
+    # é ela que manda (é assim que os atalhos conseguem mover o slider).
+    ini, fim = st.select_slider("Período", options=ANOS, key="periodo",
+                                value=st.session_state.periodo)
+
+    unif = st.toggle(
+        "Unificar Alemanha", key="unif", value=True,
+        help="Os CSVs trazem `Germany FR` e `Germany` separados. Ligado, os dois "
+             "viram uma seleção só — sem isso a Alemanha some do topo dos rankings.",
     )
+
+    with st.expander("Recortar partidas", icon=":material/filter_list:"):
+        st.caption("Vale para as abas Seleções, Partidas e Jogadores. "
+                   "O Panorama sempre mostra a edição inteira.")
+        fase_sel = st.segmented_control("Fase", ["Tudo", "Fase de grupos", "Mata-mata"],
+                                        key="mataquem", default="Tudo") or "Tudo"
+        times_sel = st.multiselect(
+            "Seleções", sorted(unificar(matches["Home Team Name"], True).unique()),
+            key="times", placeholder="Todas as seleções",
+            help="Mantém apenas partidas em que ao menos uma destas seleções jogou.",
+        )
 
 # --------------------------------------------------------------------------- #
 # Aplicação dos filtros
@@ -252,7 +455,6 @@ p = players[players["MatchID"].isin(m["MatchID"])].copy()
 
 recortado = fase_sel != "Tudo" or bool(times_sel)
 
-sb.divider()
 sb.button("Limpar filtros", icon=":material/restart_alt:", on_click=limpar,
           width="stretch", disabled=not (recortado or (ini, fim) != (ANOS[0], ANOS[-1])))
 sb.caption(
@@ -265,9 +467,7 @@ sb.caption(
 # --------------------------------------------------------------------------- #
 # Cabeçalho
 # --------------------------------------------------------------------------- #
-st.title("Copa do Mundo FIFA")
-
-selo = [f":blue-badge[:material/date_range: {ini}–{fim}]"]
+selo = [f":gray-badge[:material/date_range: {ini}–{fim}]"]
 if fase_sel != "Tudo":
     selo.append(f":orange-badge[:material/filter_list: {fase_sel}]")
 if times_sel:
@@ -275,24 +475,77 @@ if times_sel:
     selo.append(f":orange-badge[:material/groups: {rotulo}]")
 if unif:
     selo.append(":gray-badge[Alemanha unificada]")
-st.markdown(" ".join(selo))
+
+# Título à esquerda, contexto do recorte à direita — a barra de topo da
+# referência, sem inventar um botão que o app não tem.
+with st.container(horizontal=True, horizontal_alignment="distribute",
+                  vertical_alignment="center"):
+    st.title("Copa do Mundo FIFA", width="content")
+    st.markdown(" ".join(selo), width="content")
 
 if m.empty:
     st.warning("Nenhuma partida atende a esses filtros. Use **Limpar filtros** na "
                "barra lateral.", icon=":material/search_off:")
     st.stop()
 
-# KPIs agregados do recorte
-with st.container(horizontal=True):
+# KPIs do recorte — um herói e uma grade de apoio, a divisão da referência de
+# design. O herói fica com a medida que carrega a página (gols); o resto vira
+# cartão pequeno em vez de disputar a mesma altura visual.
+gols_ano = m.groupby("Year")["TotalGols"].sum()
+gols_casa = int(m["Home Team Goals"].sum())
+gols_fora = int(m["Away Team Goals"].sum())
+total_gols = gols_casa + gols_fora
+
+col_heroi, col_kpis = st.columns([2, 3], gap="medium")
+
+with col_heroi.container(border=True, key="heroi", height="stretch"):
+    st.metric("Gols no período", br(total_gols))
+
+    # A onda do herói: mesma série do número acima, sem eixos — é textura de
+    # apoio, não gráfico de leitura. Quem quiser o valor tem o hover.
+    onda = go.Figure()
+    onda.add_scatter(
+        x=gols_ano.index, y=gols_ano.values, mode="lines",
+        line=dict(color=ACCENT, width=2, shape="spline"),
+        fill="tozeroy",
+        fillgradient=dict(type="vertical",
+                          colorscale=[[0, "rgba(242,118,15,0)"],
+                                      [1, "rgba(242,118,15,.30)"]]),
+        hovertemplate="%{x}: %{y} gols<extra></extra>",
+    )
+    onda.update_layout(
+        height=104, margin=dict(l=0, r=0, t=6, b=0), showlegend=False,
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        xaxis=dict(visible=False), yaxis=dict(visible=False, rangemode="tozero"),
+        hoverlabel=dict(bgcolor="#1f1f1f", bordercolor=GRADE,
+                        font=dict(color=TINTA, size=12)),
+    )
+    st.plotly_chart(onda, width="stretch", key="onda_heroi", config=PLOTLY)
+
+    # Divisão percentual do próprio número do herói — mandante e visitante somam
+    # o total de gols. Só entra aqui o que reparte a mesma medida.
+    casa_pct = gols_casa / total_gols * 100 if total_gols else 0
+    with st.container(horizontal=True, gap="large"):
+        for pct, rotulo in ((casa_pct, "mandante"), (100 - casa_pct, "visitante")):
+            with st.container(width="content"):
+                st.markdown(f"**{br(pct, 1)}%**")
+                st.caption(rotulo)
+
+with col_kpis.container(horizontal=True, gap="medium"):
     st.metric("Edições", br(c["Year"].nunique()), icon=":material/trophy:", border=True)
     st.metric("Partidas", br(len(m)), icon=":material/sports_soccer:", border=True)
-    st.metric("Gols", br(m["TotalGols"].sum()), icon=":material/target:", border=True)
     st.metric("Gols por jogo", br(m["TotalGols"].mean(), 2),
               icon=":material/query_stats:", border=True)
     st.metric("Público médio", br(m["Attendance"].mean()),
               icon=":material/groups:", border=True)
     st.metric("Jogadores", br(p["Player Name"].nunique()),
               icon=":material/person:", border=True)
+    # Sexto cartão fecha a grade em 3x2 — com cinco, a segunda linha estica
+    # dois cartões no dobro da largura dos de cima.
+    st.metric("Países-sede", br(c["Country"].nunique()),
+              icon=":material/location_on:", border=True)
+
+st.space("small")
 
 # KPIs de tendência: última edição do recorte contra a anterior.
 # É aqui que a seta verde/vermelha ganha sentido — comparar duas edições vizinhas.
@@ -351,20 +604,20 @@ if aba_panorama.open:
 
         esq, dir_ = st.columns(2)
 
-        with esq.container(border=True):
+        with cartao(esq, "Títulos mundiais"):
             titulos = c["Winner"].value_counts().reset_index()
             titulos.columns = ["Seleção", "Títulos"]
             # Série única -> uma cor. Colorir por altura duplicaria o que a barra já mostra.
             fig = px.bar(titulos.sort_values("Títulos"), x="Títulos", y="Seleção",
-                         orientation="h", text="Títulos", title="Títulos mundiais")
+                         orientation="h", text="Títulos")
             # textangle=0: com barra fina o Plotly gira o rótulo interno em 90°.
             fig.update_traces(marker_color=SERIE[0], textfont_color=TINTA2,
                               textposition="outside", textangle=0, cliponaxis=False,
                               hovertemplate="%{y}: %{x} títulos<extra></extra>")
             fig.update_layout(yaxis_title=None)
-            st.plotly_chart(estilo(fig, 420, legenda=False), width="stretch")
+            st.plotly_chart(estilo(fig, 420, legenda=False), width="stretch", config=PLOTLY)
 
-        with dir_.container(border=True):
+        with cartao(dir_, "Pódios acumulados"):
             podio = (
                 pd.concat([
                     c["Winner"].rename("Seleção").to_frame().assign(Posição="1º — Campeão"),
@@ -377,12 +630,12 @@ if aba_panorama.open:
             # Posição é categoria ordenada -> rampa de um tom (âmbar), não hues avulsas.
             fig = px.bar(podio, x="Vezes", y="Seleção", color="Posição", orientation="h",
                          category_orders={"Seleção": list(ordem), "Posição": list(PODIO)},
-                         color_discrete_map=PODIO, title="Pódios acumulados")
+                         color_discrete_map=PODIO)
             # Gap de 2px na cor da superfície separa os segmentos — sem contorno nas marcas.
             fig.update_traces(marker_line_width=2, marker_line_color=SUPERFICIE,
                               hovertemplate="%{y} · %{fullData.name}: %{x}×<extra></extra>")
             fig.update_layout(yaxis_title=None)
-            st.plotly_chart(estilo(fig, 420), width="stretch")
+            st.plotly_chart(estilo(fig, 420), width="stretch", config=PLOTLY)
 
         anfitriao = c[c["AnfitriaoCampeao"]]
         if not anfitriao.empty:
@@ -393,8 +646,7 @@ if aba_panorama.open:
                 icon=":material/home:",
             )
 
-        with st.container(border=True):
-            st.markdown("**Todas as edições**")
+        with cartao(titulo="Todas as edições"):
             tabela = c[["Year", "Country", "Winner", "Runners-Up", "Third", "Fourth",
                         "GoalsScored", "MatchesPlayed", "GolsPorJogo", "QualifiedTeams",
                         "Attendance"]]
@@ -414,7 +666,8 @@ if aba_panorama.open:
 # --------------------------------------------------------------------------- #
 if aba_evolucao.open:
     with aba_evolucao:
-        with st.container(border=True):
+        with cartao(titulo="Média de gols por partida, por edição",
+                    legenda="Uma medida, um eixo — escalas sobrepostas inventam correlação."):
             # Uma medida, um eixo. Antes isto era um eixo duplo (gols totais + gols/jogo),
             # cuja sobreposição de escalas inventa uma correlação que não está nos dados.
             fig = go.Figure()
@@ -432,9 +685,10 @@ if aba_evolucao.open:
                         text=f"<b>{linha['GolsPorJogo']:.2f}</b> ({rotulo}. {int(linha['Year'])})",
                         showarrow=False, yshift=20, font=dict(color=TINTA, size=12),
                     )
-            fig.update_yaxes(title="Gols por jogo", rangemode="tozero")
-            fig.update_layout(title="Média de gols por partida, por edição")
-            st.plotly_chart(estilo(fig, 400, legenda=False), width="stretch")
+            # Eixo sem título: o cabeçalho do cartão já diz o que é a medida.
+            fig.update_yaxes(rangemode="tozero")
+            area_gradiente(fig, SERIE[0])
+            st.plotly_chart(estilo(fig, 400, legenda=False), width="stretch", config=PLOTLY)
 
         st.info(
             "**O futebol ficou menos goleador.** A média caiu de 5,38 (1954) para "
@@ -445,33 +699,33 @@ if aba_evolucao.open:
             icon=":material/trending_down:",
         )
 
-        with st.container(border=True):
+        with cartao(titulo="Volume do torneio por edição"):
             # Volume do torneio: duas contagens comparáveis, um eixo só.
             fig = go.Figure()
             for nome, col, cor in (("Gols", "GoalsScored", SERIE[0]),
                                    ("Partidas", "MatchesPlayed", SERIE[1])):
                 fig.add_bar(x=c["Year"], y=c[col], name=nome, marker_color=cor,
                             hovertemplate="%{x}: %{y} " + nome.lower() + "<extra></extra>")
-            fig.update_layout(barmode="group", title="Volume do torneio por edição")
-            st.plotly_chart(estilo(fig, 340), width="stretch")
+            fig.update_layout(barmode="group")
+            st.plotly_chart(estilo(fig, 340), width="stretch", config=PLOTLY)
 
         e1, e2 = st.columns(2)
-        with e1.container(border=True):
-            fig = px.bar(c, x="Year", y="Attendance", title="Público total por edição",
+        with cartao(e1, "Público total por edição"):
+            fig = px.bar(c, x="Year", y="Attendance",
                          labels={"Attendance": "Público", "Year": "Ano"})
             fig.update_traces(marker_color=SERIE[0],
                               hovertemplate="%{x}: %{y:,.0f} pessoas<extra></extra>")
-            st.plotly_chart(estilo(fig, 360, legenda=False), width="stretch")
+            st.plotly_chart(estilo(fig, 360, legenda=False), width="stretch", config=PLOTLY)
 
-        with e2.container(border=True):
+        with cartao(e2, "Público médio por partida"):
             media_pub = m.groupby("Year")["Attendance"].mean().reset_index()
             fig = px.line(media_pub, x="Year", y="Attendance", markers=True,
-                          title="Público médio por partida",
                           labels={"Attendance": "Público médio", "Year": "Ano"})
             fig.update_traces(line=dict(color=SERIE[0], width=2),
-                              marker=dict(size=8, color=SERIE[0]),
+                              marker=dict(size=7, color=SERIE[0]),
                               hovertemplate="%{x}: %{y:,.0f} por jogo<extra></extra>")
-            st.plotly_chart(estilo(fig, 360, legenda=False), width="stretch")
+            area_gradiente(fig, SERIE[0])
+            st.plotly_chart(estilo(fig, 360, legenda=False), width="stretch", config=PLOTLY)
 
 # --------------------------------------------------------------------------- #
 if aba_selecoes.open:
@@ -480,7 +734,7 @@ if aba_selecoes.open:
         topn = st.slider("Quantas seleções mostrar", 5, 40, min(15, len(rank)), key="topn")
         top = rank.head(topn)
 
-        with st.container(border=True):
+        with cartao(titulo=f"Vitórias, empates e derrotas — top {topn}"):
             # Vitória/empate/derrota é polaridade -> divergente: dois polos opostos com
             # cinza neutro no meio. Azul/vermelho em vez do verde/vermelho convencional,
             # que os dois polos colapsam sob deuteranopia.
@@ -490,13 +744,12 @@ if aba_selecoes.open:
                 x="Jogos", y="Selecao", color="Resultado", orientation="h",
                 category_orders={"Selecao": list(top.sort_values("J")["Selecao"]),
                                  "Resultado": ["V", "E", "D"]},
-                color_discrete_map={"V": SERIE[0], "E": NEUTRO, "D": SERIE[7]},
-                title=f"Vitórias, empates e derrotas — top {topn}",
+                color_discrete_map={"V": POLO_POS, "E": NEUTRO, "D": POLO_NEG},
             )
             fig.update_traces(marker_line_width=2, marker_line_color=SUPERFICIE,
                               hovertemplate="%{y} · %{fullData.name}: %{x}<extra></extra>")
             fig.update_layout(yaxis_title=None)
-            st.plotly_chart(estilo(fig, max(400, topn * 26)), width="stretch")
+            st.plotly_chart(estilo(fig, max(400, topn * 26)), width="stretch", config=PLOTLY)
 
         # Callout automático: a seleção com melhor aproveitamento e nenhum título.
         titulos_por_sel = c["Winner"].value_counts()
@@ -511,13 +764,13 @@ if aba_selecoes.open:
             )
 
         s1, s2 = st.columns([3, 2])
-        with s1.container(border=True):
+        with cartao(s1, "Experiência × aproveitamento",
+                    "Mínimo de 10 jogos. A bolha é o total de gols marcados."):
             # Saldo de gols tem zero natural -> escala divergente ancorada em 0.
             fig = px.scatter(
                 rank[rank.J >= 10], x="J", y="Aprov%", size="GP", color="SG",
                 hover_name="Selecao", color_continuous_scale=DIVERGENTE,
                 color_continuous_midpoint=0, size_max=42,
-                title="Experiência × aproveitamento (mín. 10 jogos)",
                 labels={"J": "Partidas disputadas", "Aprov%": "Aproveitamento (%)",
                         "SG": "Saldo"},
             )
@@ -529,10 +782,10 @@ if aba_selecoes.open:
             fig.update_layout(coloraxis_colorbar=dict(
                 title="Saldo", thickness=10, len=0.6,
                 tickfont=dict(color=MUTED, size=11), title_font=dict(color=MUTED, size=11)))
-            st.plotly_chart(estilo(fig, 470, legenda=False), width="stretch")
+            st.plotly_chart(estilo(fig, 470, legenda=False, grade="ambos"),
+                            width="stretch", config=PLOTLY)
 
-        with s2.container(border=True):
-            st.markdown("**Ranking completo**")
+        with cartao(s2, "Ranking completo"):
             st.dataframe(
                 rank[["Selecao", "J", "V", "E", "D", "GP", "GC", "SG", "Aprov%"]]
                 .rename(columns={"Selecao": "Seleção"}),
@@ -541,8 +794,7 @@ if aba_selecoes.open:
                     "Aproveitamento", format="%.1f%%", min_value=0, max_value=100)},
             )
 
-        with st.container(border=True):
-            st.markdown("**Confronto direto**")
+        with cartao(titulo="Confronto direto"):
             times = sorted(rank["Selecao"])
             d1, d2 = st.columns(2)
             ta = d1.selectbox("Seleção A", times,
@@ -581,29 +833,28 @@ if aba_partidas.open:
     with aba_partidas:
         p1, p2 = st.columns(2)
 
-        with p1.container(border=True):
+        with cartao(p1, "Distribuição de gols por partida"):
             dist = m["TotalGols"].value_counts().sort_index().reset_index()
             dist.columns = ["Gols na partida", "Partidas"]
             fig = px.bar(dist, x="Gols na partida", y="Partidas", text="Partidas",
-                         title="Distribuição de gols por partida")
+)
             fig.update_traces(marker_color=SERIE[0], textfont_color=TINTA2,
                               textposition="outside", textangle=0, cliponaxis=False,
                               hovertemplate="%{x} gols: %{y} partidas<extra></extra>")
-            st.plotly_chart(estilo(fig, 380, legenda=False), width="stretch")
+            st.plotly_chart(estilo(fig, 380, legenda=False), width="stretch", config=PLOTLY)
 
-        with p2.container(border=True):
+        with cartao(p2, "Média de gols por fase", "Fases com pelo menos 5 jogos."):
             fase = m.groupby("Fase").agg(Jogos=("TotalGols", "size"),
                                          Media=("TotalGols", "mean")).reset_index()
             fase = fase[fase.Jogos >= 5].sort_values("Media")
             fig = px.bar(fase, x="Media", y="Fase", orientation="h",
                          text=fase["Media"].round(2),
-                         title="Média de gols por fase (mín. 5 jogos)",
                          labels={"Media": "Gols por jogo"})
             fig.update_traces(marker_color=SERIE[0], textfont_color=TINTA2,
                               textposition="outside", textangle=0, cliponaxis=False,
                               hovertemplate="%{y}: %{x:.2f} gols por jogo<extra></extra>")
             fig.update_layout(yaxis_title=None)
-            st.plotly_chart(estilo(fig, 380, legenda=False), width="stretch")
+            st.plotly_chart(estilo(fig, 380, legenda=False), width="stretch", config=PLOTLY)
 
         recorde = m.nlargest(1, "Attendance").iloc[0]
         st.info(
@@ -617,18 +868,15 @@ if aba_partidas.open:
         r1, r2, r3 = st.columns(3)
         cfg_ano = {"Ano": st.column_config.NumberColumn(format="%d")}
 
-        with r1.container(border=True):
-            st.markdown("**Maiores goleadas**")
+        with cartao(r1, "Maiores goleadas"):
             st.dataframe(m.nlargest(10, "Saldo")[["Year", "Placar", "Saldo"]]
                          .rename(columns={"Year": "Ano"}), width="stretch",
                          hide_index=True, column_config=cfg_ano)
-        with r2.container(border=True):
-            st.markdown("**Mais gols numa partida**")
+        with cartao(r2, "Mais gols numa partida"):
             st.dataframe(m.nlargest(10, "TotalGols")[["Year", "Placar", "TotalGols"]]
                          .rename(columns={"Year": "Ano", "TotalGols": "Gols"}),
                          width="stretch", hide_index=True, column_config=cfg_ano)
-        with r3.container(border=True):
-            st.markdown("**Maiores públicos**")
+        with cartao(r3, "Maiores públicos"):
             st.dataframe(
                 m.nlargest(10, "Attendance")[["Year", "Placar", "Attendance"]]
                 .rename(columns={"Year": "Ano", "Attendance": "Público"}),
@@ -637,19 +885,19 @@ if aba_partidas.open:
                                "Público": st.column_config.NumberColumn(format="localized")},
             )
 
-        with st.container(border=True):
+        with cartao(titulo="Estádios mais usados"):
             est = (m.groupby(["Stadium", "City"])
                    .agg(Jogos=("MatchID", "size"), PublicoMedio=("Attendance", "mean"))
                    .reset_index().nlargest(15, "Jogos"))
             fig = px.scatter(est, x="Jogos", y="PublicoMedio", size="Jogos",
                              hover_name="Stadium", text="Stadium",
-                             title="Estádios mais usados",
                              labels={"PublicoMedio": "Público médio"})
             fig.update_traces(
                 marker=dict(color=SERIE[0], line=dict(width=2, color=SUPERFICIE)),
                 textposition="top center", textfont=dict(color=MUTED, size=11),
                 hovertemplate="<b>%{hovertext}</b><br>%{x} jogos · %{y:,.0f} de média<extra></extra>")
-            st.plotly_chart(estilo(fig, 450, legenda=False), width="stretch")
+            st.plotly_chart(estilo(fig, 450, legenda=False, grade="ambos"),
+                            width="stretch", config=PLOTLY)
 
 # --------------------------------------------------------------------------- #
 if aba_jogadores.open:
@@ -667,7 +915,7 @@ if aba_jogadores.open:
                       icon=":material/dangerous:", border=True,
                       help="Vermelhos diretos + segundo amarelo")
 
-        with st.container(border=True):
+        with cartao(titulo="Top 20 artilheiros"):
             art = (ev.groupby("Player Name")[["Gols", "Penaltis", "TotalGols"]].sum()
                    .sort_values("TotalGols", ascending=False).head(20).reset_index())
             fig = px.bar(
@@ -676,15 +924,15 @@ if aba_jogadores.open:
                 x="Qtd", y="Player Name", color="Tipo", orientation="h",
                 category_orders={"Player Name": list(art.sort_values("TotalGols")["Player Name"])},
                 color_discrete_map={"Gols": SERIE[0], "Penaltis": SERIE[1]},
-                title="Top 20 artilheiros",
             )
             fig.update_traces(marker_line_width=2, marker_line_color=SUPERFICIE,
                               hovertemplate="%{y} · %{fullData.name}: %{x}<extra></extra>")
             fig.update_layout(yaxis_title=None)
-            st.plotly_chart(estilo(fig, 620), width="stretch")
+            st.plotly_chart(estilo(fig, 620), width="stretch", config=PLOTLY)
 
         g1, g2 = st.columns(2)
-        with g1.container(border=True):
+        with cartao(g1, "Cartões por edição",
+                    "Registrados só a partir de 1970. Vermelhos incluem o segundo amarelo."):
             # Duas séries, não três: o segundo amarelo entra no vermelho (é o que ele é
             # em campo). Como três hues, amarelo e laranja ficavam a ΔE 13,6 — abaixo do
             # piso de 15 em que dois tons deixam de ser distinguíveis mesmo com visão normal.
@@ -692,29 +940,25 @@ if aba_jogadores.open:
             cartoes["Vermelhos"] = cartoes["VermelhosDiretos"] + cartoes["SegundoAmarelo"]
             cartoes = cartoes.reset_index()
             fig = px.area(cartoes, x="Year", y=["Amarelos", "Vermelhos"],
-                          title="Cartões por edição",
                           labels={"value": "Cartões", "Year": "Ano"},
                           color_discrete_map={"Amarelos": AMARELO, "Vermelhos": VERMELHO})
             fig.update_traces(line_width=2,
                               hovertemplate="%{x} · %{fullData.name}: %{y}<extra></extra>")
-            st.plotly_chart(estilo(fig, 380), width="stretch")
-            st.caption("Cartões só passaram a ser registrados a partir de 1970. "
-                       "Vermelhos incluem o segundo amarelo.")
+            st.plotly_chart(estilo(fig, 380), width="stretch", config=PLOTLY)
 
-        with g2.container(border=True):
+        with cartao(g2, "Técnicos com mais partidas"):
             tec = (p.drop_duplicates(subset=["MatchID", "Coach Name"])["Coach Name"]
                    .value_counts().head(15).reset_index())
             tec.columns = ["Técnico", "Jogos"]
             fig = px.bar(tec.sort_values("Jogos"), x="Jogos", y="Técnico",
-                         orientation="h", text="Jogos", title="Técnicos com mais partidas")
+                         orientation="h", text="Jogos")
             fig.update_traces(marker_color=SERIE[0], textfont_color=TINTA2,
                               textposition="outside", textangle=0, cliponaxis=False,
                               hovertemplate="%{y}: %{x} jogos<extra></extra>")
             fig.update_layout(yaxis_title=None)
-            st.plotly_chart(estilo(fig, 380, legenda=False), width="stretch")
+            st.plotly_chart(estilo(fig, 380, legenda=False), width="stretch", config=PLOTLY)
 
-        with st.container(border=True):
-            st.markdown("**Buscar jogador**")
+        with cartao(titulo="Buscar jogador"):
             busca = st.text_input("Nome (parcial)", placeholder="ex.: RONALDO, KLOSE, PELÉ",
                                   label_visibility="collapsed")
             if busca:
