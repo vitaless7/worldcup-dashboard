@@ -23,45 +23,45 @@ from nomes_corrigidos import JOGADORES, TECNICOS  # noqa: E402
 ALEMANHA = {"Germany FR": "Germany", "West Germany": "Germany", "Germany DR": "Germany"}
 
 # --------------------------------------------------------------------------- #
-# Paleta — cada cor tem um trabalho. Validada contra a superfície #1a1a19:
-# banda OKLCH, piso de croma, separação CVD (protan/deutan) e contraste WCAG.
+# Paleta — cada cor tem um trabalho. Espelhada em image.png (preto puro, cartao
+# quase-preto, um accent rosa) e validada contra a superficie do cartao:
+# banda OKLCH, piso de croma, separacao CVD (protan/deutan) e contraste WCAG.
 # --------------------------------------------------------------------------- #
 # É o CARTÃO, não a página: é sobre ele que as marcas ficam, então é contra
 # ele que a paleta foi validada e é dele a cor dos vãos de 2px entre marcas.
-SUPERFICIE = "#171717"
+SUPERFICIE = "#131313"
 
 # Categórica (identidade). Ordem fixa, nunca ciclada — a ordem É o mecanismo
-# de segurança CVD. Slot 1 no laranja do accent: é assim que a referência
-# trabalha, um tom só carregando quase todo gráfico. Slot 2 no aqua, o mais
-# distante dele. O laranja da imagem (#ff7810) ficou de fora por estar acima da
-# banda de marca (L 0.72 > 0.67); #dd6a10 é o passo mais próximo que passa.
-# Validada em dataviz/scripts/validate_palette.py --mode dark --surface #171717:
-# adjacente CVD 10.4 · piso de visão normal 19.3 · 3 primeiros --pairs all 11.9/20.9.
-SERIE = ["#dd6a10", "#199e70", "#3987e5", "#c98500", "#d55181", "#008300", "#9085e9", "#e66767"]
+# de segurança CVD. Slot 1 no rosa do accent: é assim que a referência
+# trabalha, um tom só carregando quase todo gráfico. Slot 2 no AZUL, não no
+# aqua: aqua ao lado do rosa colapsa sob deuteranopia (ΔE 3,0).
+# Validada em dataviz/scripts/validate_palette.py --mode dark --surface #131313:
+# adjacente CVD 8,4 · piso de visão normal 19,8 · 3 primeiros --pairs all 8,8/18,2.
+SERIE = ["#e44161", "#3987e5", "#c98500", "#199e70", "#9085e9", "#008300", "#00a0b4", "#b06a00"]
 
 # Divergente (polaridade): dois polos opostos + cinza neutro no meio.
-# Laranja<->azul: CVD 27.3, e mantém a tela em dois cromáticos só (o accent e
-# o azul), que é a economia de cor da referência — o âmbar que estava aqui
-# virava um terceiro tom quente difícil de separar do accent.
+# Rosa<->azul: CVD 20,7, e mantém a tela em dois cromáticos só (o accent e o
+# azul), que é a economia de cor da referência.
 # Verde<->vermelho está fora: colapsa sob deuteranopia.
-POLO_POS, POLO_NEG = "#dd6a10", "#3987e5"
-DIVERGENTE = [[0.0, POLO_NEG], [0.5, "#7a7a7a"], [1.0, POLO_POS]]
-NEUTRO = "#7a7a7a"
+POLO_POS, POLO_NEG = "#e44161", "#3987e5"
+DIVERGENTE = [[0.0, POLO_NEG], [0.5, "#6f6f6f"], [1.0, POLO_POS]]
+NEUTRO = "#6f6f6f"
 
 # Ordinal (categorias ordenadas): rampa de um tom só. Pódio 1º > 2º > 3º.
-# Neutra, não âmbar: ao lado do laranja do accent a rampa dourada virava a
-# mesma cor com saturações diferentes. Aqui o laranja segue sendo o único
-# cromático da tela, que é como a referência trabalha.
-# Validada --ordinal --surface #171717: L monótono, ΔL >= 0.06, ponta 3.52:1.
+# Neutra, não rosa: ao lado do accent a rampa rosada virava a mesma cor com
+# saturações diferentes. Aqui o rosa segue sendo o único cromático da tela.
+# Validada --ordinal --surface #131313: L monótono, ΔL >= 0.06, ponta 3.64:1.
 PODIO = {"1º — Campeão": "#dcdcdc", "2º — Vice": "#a5a5a5", "3º — Terceiro": "#6e6e6e"}
 
-# Status (estado). Tokens reservados — nunca viram "série 4".
-AMARELO, VERMELHO = "#fab219", "#d03b3b"
+# Status (estado). Tokens reservados — nunca viram "série 4". O vermelho saiu
+# de #d03b3b para um tijolo: contra um accent rosa o vermelho antigo ficava a
+# ΔE 6,1 do accent (indistinguível); #c94f22 abre para 9,3.
+AMARELO, VERMELHO = "#fab219", "#c94f22"
 
-# Cromo do gráfico — neutro, medido na referência (rótulos #aaaaaa, eixos mais
-# recuados ainda). Nada de branco puro: a referência não usa em lugar nenhum.
-TINTA, TINTA2, MUTED = "#e1e1e1", "#aaaaaa", "#8a8a8a"
-GRADE = "#232323"
+# Cromo do gráfico — neutro, medido na referência (rótulos cinza-claro, eixos
+# mais recuados ainda). Nada de branco puro nas marcas: só o título usa.
+TINTA, TINTA2, MUTED = "#f2f2f2", "#a5a5a5", "#7d7d7d"
+GRADE = "#1c1c1c"
 
 st.set_page_config(
     page_title="Copa do Mundo — Dashboard",
@@ -71,107 +71,185 @@ st.set_page_config(
 
 
 # --------------------------------------------------------------------------- #
-# Cromo de cartão — importado da referência de design (SaaS moderno):
-# raio grande, sombra suave, respiro interno e um cartão "herói" em gradiente.
-# O tema (cores, fonte, raio base) vive em .streamlit/config.toml; aqui fica só
-# o que o config não alcança: sombra, tamanho do número do metric e o gradiente.
+# Cromo de cartão — traduzido de image.png. A referência é um dark UI de time
+# de produto: página preta, cartões quase-pretos com raio grande e SEM borda
+# dura, tipografia apertada, um accent rosa que aparece pouco e sempre em
+# traço, texto ou pílula — nunca como área grande com texto em cima.
 #
-# Contraste do herói: branco sobre #cf4055 dá 4,7:1 e sobre #b8407e dá 5,4:1 —
-# ambos passam WCAG AA para texto pequeno. Clarear o gradiente quebra isso.
+# O tema (cores, fonte, raio base) vive em .streamlit/config.toml; aqui fica só
+# o que o config não alcança: elevação, o gradiente do herói, a régua de
+# tipografia e a barra de abas em pílula.
+#
+# Contraste: o accent #e44161 dá 4,63:1 sobre o cartão e 5,23:1 sobre a
+# página — passa AA para texto pequeno. Preencher uma pílula inteira de rosa
+# com texto branco daria 3,1:1 e NÃO passa; por isso a aba ativa é branca com
+# texto preto (a pílula da referência), e não rosa.
 # --------------------------------------------------------------------------- #
-# O herói não é mais um bloco chapado de cor: na referência os cartões são
-# escuros e o accent entra em traço fino. Gradiente quente e discreto, com o
-# laranja aparecendo na onda e nos números — não no fundo.
-HERO_A, HERO_B = "#241a10", "#161310"
-ACCENT = "#f2760f"      # laranja vivo: só traço e texto, nunca área com texto em cima
+HERO_A, HERO_B = "#1d1114", "#121011"   # brasa: rosa quase apagado -> neutro
+ACCENT = "#e44161"      # accent: traço, número e texto
+ACCENT_HI = "#f04467"   # o passo claro, para hover e link
+CARTAO = "#131313"
+CARTAO_HOVER = "#181818"
 
 st.html(f"""
 <style>
-/* Cartões: elevação discreta. Na referência a separação vem do tom do cartão
-   contra a página (#171717 sobre #0e0e0e), não de sombra pesada. */
+/* ---------------------------------------------------------------- cartões */
+/* Na referência a separação vem do TOM (cartão #131313 sobre página #000),
+   com uma sombra difusa fazendo o cartão flutuar — não de borda desenhada. */
 [class*="st-key-cartao"], [data-testid="stMetric"] {{
-    box-shadow: 0 1px 2px rgba(0,0,0,.40);
-    transition: box-shadow .18s ease, border-color .18s ease;
+    background: {CARTAO};
+    border-color: transparent;
+    box-shadow: 0 1px 1px rgba(0,0,0,.6), 0 10px 30px -22px rgba(0,0,0,.9);
+    transition: background .18s ease, box-shadow .18s ease;
 }}
 [class*="st-key-cartao"]:hover, [data-testid="stMetric"]:hover {{
-    border-color: #323232;
-    box-shadow: 0 2px 6px rgba(0,0,0,.5), 0 14px 34px -20px rgba(0,0,0,.7);
+    background: {CARTAO_HOVER};
+    box-shadow: 0 1px 1px rgba(0,0,0,.6), 0 16px 40px -24px rgba(0,0,0,1);
 }}
-[class*="st-key-cartao"] {{ padding: 4px 6px; }}
+[class*="st-key-cartao"] {{ padding: 14px 16px; }}
 
-/* Números grandes: é o KPI que carrega o cartão, não o rótulo. */
+/* -------------------------------------------------------------- métricas */
+/* Número grande e apertado: é o KPI que carrega o cartão, não o rótulo. */
 [data-testid="stMetric"] {{ padding: 18px 20px; }}
-[data-testid="stMetricValue"] {{ font-size: 30px; font-weight: 600; letter-spacing: -.02em; }}
-[data-testid="stMetricLabel"] p {{ font-size: 13px; color: {MUTED}; }}
+[data-testid="stMetricValue"] {{
+    font-size: 32px; font-weight: 700; letter-spacing: -.035em; color: {TINTA};
+}}
+[data-testid="stMetricLabel"] p {{
+    font-size: 12px; font-weight: 500; color: {MUTED}; letter-spacing: .005em;
+}}
+/* O ícone do metric ganha o accent — é o ponto colorido que a referência põe
+   ao lado de cada linha de lista. Um por cartão, nunca mais. */
+[data-testid="stMetricIcon"] {{ color: {ACCENT}; }}
+/* A faísca do metric é um Vega embed, e o Streamlit escreve a cor de fundo da
+   PÁGINA no atributo style do próprio SVG. Com a página preta e o cartão não,
+   isso abria um retângulo preto dentro do cartão. Transparente: a faísca passa
+   a flutuar sobre a superfície do cartão, como todo o resto.
+   (Nada de "menor-que" em comentário de CSS aqui: o sanitizador do st.html
+   descarta o bloco inteiro se achar o que parece uma tag dentro dele.) */
+[data-testid="stMetricChart"] .marks {{ background-color: transparent !important; }}
+/* O Streamlit amarra a cor da faísca à do delta: subiu vira verde, caiu vira
+   vermelho. Isso gasta o token de status numa linha que não é um estado — a
+   série histórica é a mesma coisa em todo cartão, então tem que ter uma cor
+   só. A faísca volta para o accent da paleta e o verde/vermelho fica onde
+   significa alguma coisa: na porcentagem, que é o que compara duas edições. */
+[data-testid="stMetricChart"] .mark-line path {{ stroke: {ACCENT} !important; }}
 
-/* Herói — cartão escuro com o accent em traço, como o "Climate Control" da
-   referência. Fundo chapado de laranja com texto branco daria 2,9:1; aqui o
-   laranja fica na onda e nos números, sobre fundo escuro, a 6,8:1. */
+/* ---------------------------------------------------------------- herói */
+/* Cartão escuro com brasa rosa no canto, e o accent só na onda e nos números.
+   Fundo chapado de rosa com texto branco daria 3,1:1; assim fica 5,2:1. */
 .st-key-heroi {{
-    background: linear-gradient(140deg, {HERO_A} 0%, {HERO_B} 62%);
-    border: 1px solid #2a2118;
+    background:
+        radial-gradient(120% 140% at 0% 0%, rgba(228,65,97,.16) 0%, rgba(228,65,97,0) 55%),
+        linear-gradient(150deg, {HERO_A} 0%, {HERO_B} 70%);
+    border: 1px solid rgba(228,65,97,.16);
     padding: 22px 24px 18px;
 }}
-/* O metric do herói é o único sem borda no app: nada de sombra/padding de cartão. */
-.st-key-heroi [data-testid="stMetric"] {{ box-shadow: none; padding: 0; }}
+/* O metric do herói é o único sem casca no app: nada de fundo, sombra ou padding. */
+.st-key-heroi [data-testid="stMetric"] {{
+    background: transparent; box-shadow: none; padding: 0;
+}}
+.st-key-heroi [data-testid="stMetric"]:hover {{ background: transparent; }}
 .st-key-heroi [data-testid="stMetricValue"] {{
-    font-size: 46px; color: {TINTA}; font-weight: 600;
+    font-size: 50px; letter-spacing: -.04em; color: {TINTA};
 }}
 .st-key-heroi [data-testid="stMetricLabel"] p {{ color: {MUTED}; }}
-.st-key-heroi strong {{ color: {ACCENT}; font-size: 19px; }}
+.st-key-heroi strong {{ color: {ACCENT}; font-size: 20px; letter-spacing: -.02em; }}
 .st-key-heroi p {{ color: {TINTA2}; }}
 
-/* Tipografia — três níveis e só. Rótulo de seção (h5) vira micro-caixa-alta
-   recuada; título de cartão é o peso do meio; legenda é tinta muted. */
+/* ----------------------------------------------------------- tipografia */
+/* Quatro níveis e só: título da página, rótulo de seção, título de cartão,
+   legenda. A referência aperta o tracking dos títulos e afrouxa o dos
+   micro-rótulos em caixa-alta — é o que dá a "cara de kit de UI". */
+h1 {{ letter-spacing: -.035em; }}
 h5 {{
     font-size: 11px !important; font-weight: 600 !important;
-    letter-spacing: .09em; text-transform: uppercase;
+    letter-spacing: .11em; text-transform: uppercase;
     color: {MUTED} !important; margin-bottom: 2px;
 }}
-[class*="st-key-cabecalho-"] {{ margin-bottom: 2px; }}
-[class*="st-key-cabecalho-"] p {{
-    font-size: 15px; font-weight: 600; letter-spacing: -.01em;
+[class*="st-key-cabecalho-"] {{ margin-bottom: 6px; }}
+[class*="st-key-cabecalho-"] [data-testid="stMarkdownContainer"] p {{
+    font-size: 15px; font-weight: 600; letter-spacing: -.015em; color: {TINTA};
 }}
-[class*="st-key-cabecalho-"] [data-testid="stCaption"] p,
-[class*="st-key-cabecalho-"] small {{ color: {MUTED}; }}
+/* A legenda do cartão é `stCaptionContainer`, não `stMarkdownContainer` — sem
+   essa distinção ela herdava o peso do título e virava uma segunda manchete. */
+[class*="st-key-cabecalho-"] [data-testid="stCaptionContainer"] p {{
+    font-size: 12.5px; font-weight: 400; letter-spacing: 0; color: {MUTED};
+}}
 
-/* Marca: selo em gradiente + assinatura. Vai num bloco de HTML só — um lockup
-   de marca não tem equivalente nativo, e aninhar containers para montá-lo
-   deixa o selo à mercê do flex do Streamlit (ele colapsava para 7px). */
+/* ---------------------------------------------------------------- marca */
+/* Selo + assinatura. Vai num bloco de HTML só — um lockup de marca não tem
+   equivalente nativo, e aninhar containers para montá-lo deixa o selo à mercê
+   do flex do Streamlit (ele colapsava para 7px). */
 .marca {{ display: flex; align-items: center; gap: 11px; margin: 2px 0 18px; }}
 .marca-selo {{
-    background: #1c1610;
-    border: 1px solid #2e2419;
-    border-radius: 13px;
+    background: linear-gradient(145deg, {ACCENT} 0%, #b8304c 100%);
+    border-radius: 14px;
     width: 40px; height: 40px; flex: 0 0 40px;
     display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 18px -8px rgba(228,65,97,.75);
 }}
+/* Único lugar do app com área grande de accent: o ícone é uma forma, não
+   texto corrido, então a regra de contraste de texto não se aplica. */
 .marca-icone {{
-    font-family: "Material Symbols Rounded"; font-size: 23px; color: {ACCENT};
+    font-family: "Material Symbols Rounded"; font-size: 22px; color: #ffffff;
     line-height: 1;
 }}
-.marca-nome {{ font-weight: 700; font-size: 15px; color: {TINTA}; line-height: 1.25; }}
+.marca-nome {{ font-weight: 700; font-size: 15px; color: {TINTA};
+              letter-spacing: -.02em; line-height: 1.25; }}
 .marca-sub {{ font-size: 12px; color: {MUTED}; line-height: 1.25; }}
 
-/* Abas em pílula — a barra vira um grupo segmentado, não uma régua sublinhada. */
+/* ----------------------------------------------------------------- abas */
+/* A barra vira um grupo segmentado em pílula, não uma régua sublinhada. */
 [data-testid="stTabs"] [role="tablist"] {{
     gap: 4px; padding: 5px;
-    background: #131313;
-    border: 1px solid {GRADE};
+    background: {CARTAO};
+    border: none;
     border-radius: 999px;
     width: fit-content;
-    border-bottom: 1px solid {GRADE};
+    border-bottom: none;
 }}
-[data-testid="stTab"] {{ border-radius: 999px; padding: 6px 15px; }}
-[data-testid="stTab"]:hover {{ background: #1c1c1c; }}
-/* Aba ativa: preenchimento discreto e o accent no texto — é assim que a
-   referência marca o item de navegação selecionado. Preencher a pílula de
-   laranja obrigaria texto branco em cima dele, que não passa contraste. */
-[data-testid="stTab"][aria-selected="true"] {{ background: #232323; }}
+[data-testid="stTab"] {{
+    border-radius: 999px; padding: 7px 16px;
+    font-size: 13px; font-weight: 500;
+}}
+[data-testid="stTab"] p, [data-testid="stTab"] span {{ color: {TINTA2}; }}
+[data-testid="stTab"]:hover {{ background: #202020; }}
+/* Aba ativa: pílula branca com texto preto — é exatamente como a referência
+   marca o item selecionado (o botão "Download", o dia do calendário). Rosa
+   chapado com texto branco em cima daria 3,1:1 e não passaria. */
+[data-testid="stTab"][aria-selected="true"] {{ background: {TINTA}; }}
 [data-testid="stTab"][aria-selected="true"] p,
-[data-testid="stTab"][aria-selected="true"] span {{ color: {ACCENT} !important; }}
+[data-testid="stTab"][aria-selected="true"] span,
+[data-testid="stTab"][aria-selected="true"] [data-testid="stIconMaterial"],
+[data-testid="stTab"][aria-selected="true"] span[translate="no"] {{
+    color: #0a0a0a !important;
+}}
 /* Sublinhado da aba ativa: a pílula já marca a seleção. */
 .react-aria-SelectionIndicator {{ display: none; }}
+
+/* --------------------------------------------------------------- avisos */
+/* O padrão do Streamlit pinta a faixa inteira com o tom do status — uma banda
+   azul saturada de 1400px que rouba a tela do accent. A referência nunca usa
+   área grande de cor: aqui o aviso vira cartão neutro com um filete e o ícone
+   no tom do status. O status segue legível por ícone + texto, nunca por cor só. */
+[data-testid="stAlertContainer"] {{
+    background: {CARTAO} !important;
+    border: 1px solid #1e1e1e;
+    border-left: 3px solid currentColor;
+    border-radius: 14px;
+}}
+[data-testid="stAlert"] [data-testid="stMarkdownContainer"] {{ color: {TINTA2}; }}
+[data-testid="stAlert"] [data-testid="stMarkdownContainer"] strong {{ color: {TINTA}; }}
+
+/* ------------------------------------------------------------- controles */
+/* Pílulas e botões seguem a mesma gramática das abas: fundo branco quando
+   selecionado, cinza recuado quando não. */
+[data-testid="stBaseButton-pillsActive"] {{
+    background: {TINTA}; color: #0a0a0a; border-color: {TINTA};
+}}
+[data-testid="stSidebar"] [data-testid="stBaseButton-secondary"]:hover {{
+    border-color: {ACCENT}; color: {ACCENT_HI};
+}}
 </style>
 """)
 
@@ -235,7 +313,7 @@ def estilo(fig, altura=400, legenda=True, grade="auto"):
         legend=dict(orientation="h", y=1.14, x=0, title_text="",
                     bgcolor="rgba(0,0,0,0)", itemsizing="constant",
                     font=dict(color=MUTED, size=12)),
-        hoverlabel=dict(bgcolor="#1f1f1f", bordercolor=GRADE,
+        hoverlabel=dict(bgcolor="#1c1c1c", bordercolor="#2a2a2a",
                         font=dict(color=TINTA, size=12)),
         bargap=0.45,          # marcas finas: barra grossa e saturada lê como bloco
         bargroupgap=0.12,
@@ -469,10 +547,10 @@ sb.caption(
 # --------------------------------------------------------------------------- #
 selo = [f":gray-badge[:material/date_range: {ini}–{fim}]"]
 if fase_sel != "Tudo":
-    selo.append(f":orange-badge[:material/filter_list: {fase_sel}]")
+    selo.append(f":primary-badge[:material/filter_list: {fase_sel}]")
 if times_sel:
     rotulo = ", ".join(times_sel[:3]) + ("…" if len(times_sel) > 3 else "")
-    selo.append(f":orange-badge[:material/groups: {rotulo}]")
+    selo.append(f":primary-badge[:material/groups: {rotulo}]")
 if unif:
     selo.append(":gray-badge[Alemanha unificada]")
 
@@ -509,15 +587,15 @@ with col_heroi.container(border=True, key="heroi", height="stretch"):
         line=dict(color=ACCENT, width=2, shape="spline"),
         fill="tozeroy",
         fillgradient=dict(type="vertical",
-                          colorscale=[[0, "rgba(242,118,15,0)"],
-                                      [1, "rgba(242,118,15,.30)"]]),
+                          colorscale=[[0, "rgba(228,65,97,0)"],
+                                      [1, "rgba(228,65,97,.32)"]]),
         hovertemplate="%{x}: %{y} gols<extra></extra>",
     )
     onda.update_layout(
         height=104, margin=dict(l=0, r=0, t=6, b=0), showlegend=False,
         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
         xaxis=dict(visible=False), yaxis=dict(visible=False, rangemode="tozero"),
-        hoverlabel=dict(bgcolor="#1f1f1f", bordercolor=GRADE,
+        hoverlabel=dict(bgcolor="#1c1c1c", bordercolor="#2a2a2a",
                         font=dict(color=TINTA, size=12)),
     )
     st.plotly_chart(onda, width="stretch", key="onda_heroi", config=PLOTLY)

@@ -1,25 +1,28 @@
 # Tema do dashboard da Copa do Mundo.
-# Espelhado na referencia de design (dashboard "Zoya"): quase-preto neutro com
-# UM accent laranja, usado com parcimonia. Superficies medidas na propria
-# imagem: pagina #0e0e0e, cartao #171717, accent #f6700a-#ff7810.
 #
-# As marcas dos graficos ficam SOBRE O CARTAO (#171717) — e contra ele que a
+# Linguagem visual espelhada em image.png: preto puro na pagina, cartoes
+# quase-pretos flutuando sem borda dura, UM accent rosa/carmim e tipografia
+# apertada. Superficies medidas na propria imagem (pixel a pixel):
+#   pagina #000000 · cartao #131313 · accent #d03253-#f04467.
+#
+# As marcas dos graficos ficam SOBRE O CARTAO (#131313) — e contra ele que a
 # paleta foi validada, nao contra a pagina. Alterar essas superficies exige
 # revalidar com dataviz/scripts/validate_palette.py.
 
 [theme]
 base = "dark"
-# Accent. O laranja da referencia (#ff7810) tem L 0.72 — fora da banda de
-# marca (0.48-0.67). Este e o passo mais proximo que passa: L 0.651, croma
-# 0.168, 5.24:1 sobre o cartao.
-primaryColor = "#dd6a10"
-backgroundColor = "#0e0e0e"              # pagina
-secondaryBackgroundColor = "#171717"     # cartoes, widgets, superficie dos graficos
-codeBackgroundColor = "#171717"
-textColor = "#e1e1e1"                    # tinta primaria (14.8:1 na pagina)
-linkColor = "#f2760f"                    # 6.8:1 na pagina
-borderColor = "#242424"                  # hairline
-codeTextColor = "#aaaaaa"                # tinta secundaria (8.3:1)
+# Accent. O rosa da referencia (#d03253) tem L 0.571 e contraste 3.77 no
+# cartao; #e44161 (o rosa da barra de progresso da mesma imagem) sobe para
+# L 0.621 e 4.63:1, dentro da banda de marca (0.48-0.67). E esse o token.
+primaryColor = "#e44161"
+backgroundColor = "#000000"              # pagina — preto puro, como a referencia
+secondaryBackgroundColor = "#131313"     # cartoes, widgets, superficie dos graficos
+codeBackgroundColor = "#131313"
+textColor = "#f2f2f2"                    # tinta primaria (18.8:1 na pagina)
+linkColor = "#f04467"                    # 5.7:1 na pagina
+borderColor = "#1e1e1e"                  # hairline quase invisivel: na referencia
+                                         # a separacao vem do tom, nao da linha
+codeTextColor = "#a5a5a5"                # tinta secundaria (8.5:1)
 
 font = "'Inter':https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
 headingFont = "'Inter':https://fonts.googleapis.com/css2?family=Inter:wght@600;700&display=swap"
@@ -27,57 +30,63 @@ codeFont = "'JetBrains Mono':https://fonts.googleapis.com/css2?family=JetBrains+
 baseFontSize = 15
 baseFontWeight = 400
 codeFontSize = "13px"
-headingFontSizes = ["30px", "23px", "19px", "16px", "14px", "13px"]
-headingFontWeights = [700, 600, 600, 600, 500, 500]
+headingFontSizes = ["32px", "24px", "19px", "16px", "14px", "13px"]
+headingFontWeights = [700, 700, 600, 600, 500, 500]
 linkUnderline = false
-# Raio grande e botao em pilula: a linguagem de forma da referencia.
-baseRadius = "14px"
+# Raio grande e botao em pilula: a linguagem de forma da referencia, onde os
+# cartoes sao visivelmente mais arredondados que o padrao SaaS.
+baseRadius = "18px"
 buttonRadius = "full"
 showWidgetBorder = true
-showSidebarBorder = true
+showSidebarBorder = false
 
 # Status — tokens fixos, nunca tematizados. Nunca reaproveitados como "serie 4".
+# O "critical" saiu de #d03b3b para um vermelho-tijolo: contra um accent rosa,
+# o vermelho antigo ficava a dE 6.1 do accent (indistinguivel). #c94f22 abre
+# para 9.3 e mantem 25.3 do amarelo.
 greenColor = "#0ca30c"                   # good
-yellowColor = "#fab219"                  # warning
-orangeColor = "#ec835a"                  # serious
-redColor = "#d03b3b"                     # critical
+yellowColor = "#fab219"                  # warning / cartao amarelo
+orangeColor = "#e0803c"                  # serious
+redColor = "#c94f22"                     # critical / cartao vermelho
 blueColor = "#3987e5"
 violetColor = "#9085e9"
-grayColor = "#8a8a8a"                    # tinta muted (eixos, rotulos) — 5.6:1
+grayColor = "#8a8a8a"                    # tinta muted (eixos, rotulos) — 5.4:1
 
 # Categorica: ordem fixa, nunca ciclada — a ordem E o mecanismo de seguranca
-# CVD. Slot 1 no laranja do accent, que e como a referencia trabalha: um tom
-# carrega quase todo grafico. Slot 2 no aqua, o mais distante dele.
+# CVD. Slot 1 no rosa do accent, que e como a referencia trabalha: um tom
+# carrega quase todo grafico. Slot 2 no azul, o mais distante dele sob CVD
+# (o aqua na posicao 2 colapsava com o rosa sob deuteranopia, dE 3.0).
 #
-# Validada com dataviz/scripts/validate_palette.py --mode dark --surface #171717:
-#   adjacente  CVD 10.4 · piso de visao normal 19.3
-#   3 primeiros --pairs all (dispersao)  CVD 11.9 · piso normal 25.0
+# Validada com dataviz/scripts/validate_palette.py --mode dark --surface #131313:
+#   adjacente  CVD 8.4 (protan) · piso de visao normal 19.8
+#   3 primeiros --pairs all (dispersao)  CVD 8.8 · piso normal 18.2
 chartCategoricalColors = [
-    "#dd6a10",  # 1 laranja (accent)
-    "#199e70",  # 2 aqua
-    "#3987e5",  # 3 azul
-    "#c98500",  # 4 amarelo
-    "#d55181",  # 5 magenta
+    "#e44161",  # 1 rosa (accent)
+    "#3987e5",  # 2 azul
+    "#c98500",  # 3 ambar
+    "#199e70",  # 4 aqua
+    "#9085e9",  # 5 violeta
     "#008300",  # 6 verde
-    "#9085e9",  # 7 violeta
-    "#e66767",  # 8 vermelho
+    "#00a0b4",  # 7 ciano
+    "#b06a00",  # 8 bronze
 ]
 
 # Sequencial: um tom so, claro -> escuro. Nunca arco-iris. No tom do slot 1,
-# gerada em OKLCH com L monotono. Extremo escuro a 2.44:1 do cartao.
+# gerada em OKLCH com L monotono (dL minimo 0.029). Extremo escuro a 2.42:1
+# do cartao.
 chartSequentialColors = [
-    "#ffdaba", "#ffc39a", "#ffad7a", "#ff985b", "#f2843d",
-    "#e4711f", "#d26000", "#be5200", "#a84700", "#903d00",
+    "#ffbbc8", "#ffa2b3", "#ff8a9f", "#ff748d", "#ff607c",
+    "#f64f6d", "#e04260", "#c83854", "#af324a", "#942f40",
 ]
 
-dataframeBorderColor = "#242424"
-dataframeHeaderBackgroundColor = "#171717"
+dataframeBorderColor = "#1e1e1e"
+dataframeHeaderBackgroundColor = "#131313"
 
 [theme.sidebar]
-backgroundColor = "#0b0b0b"
-secondaryBackgroundColor = "#171717"
-codeBackgroundColor = "#171717"
-borderColor = "#242424"
+backgroundColor = "#000000"
+secondaryBackgroundColor = "#131313"
+codeBackgroundColor = "#131313"
+borderColor = "#1e1e1e"
 
 [browser]
 gatherUsageStats = false
